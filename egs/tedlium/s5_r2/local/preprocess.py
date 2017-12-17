@@ -58,7 +58,7 @@ def preprocess(filename):
 
 	# Make sure to change "./Gutenberg/txt/"+filename to the path of yyour desired data file(s)
 	f_in = open("./Gutenberg/txt/"+filename, 'r+', encoding="ISO-8859-1")
-	f_out = open("thatFile.txt", 'a')
+	f_out = open("cleanedData.txt", 'a')
 
 	text = f_in.read()
 
