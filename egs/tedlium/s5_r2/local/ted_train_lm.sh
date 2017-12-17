@@ -59,21 +59,22 @@ if [ $stage -le 0 ]; then
   rm ${dir}/data/text/* 2>/dev/null || true
 
   # Unzip TEDLIUM 6 data sources, normalize apostrophe+suffix to previous word, gzip the result.
-  gunzip -c db/TEDLIUM_release2/LM/*.en.gz | sed 's/ <\/s>//g' | local/join_suffix.py | gzip -c  > ${dir}/data/text/train.txt.gz
+  cat local/thatFile.txt | sed 's/ <\/s>//g' | local/join_suffix.py | gzip -c  > ${dir}/data/text/train.txt.gz
   # use a subset of the annotated training data as the dev set .
   # Note: the name 'dev' is treated specially by pocolm, it automatically
   # becomes the dev set.
-  head -n $num_dev_sentences < data/train/text | cut -d " " -f 2-  > ${dir}/data/text/dev.txt
+  gunzip -c ${dir}/data/text/train.txt.gz > data/train/text/train.txt
+  head -n $num_dev_sentences < ${dir}/data/train/text/train.txt | cut -d " " -f 2-  > ${dir}/data/text/dev.txt
   # .. and the rest of the training data as an additional data source.
   # we can later fold the dev data into this.
-  tail -n +$[$num_dev_sentences+1] < data/train/text | cut -d " " -f 2- >  ${dir}/data/text/ted.txt
+  tail -n +$[$num_dev_sentences+1] < ${dir}/data/train/text/train.txt | cut -d " " -f 2- >  ${dir}/data/text/ted.txt
 
   # for reporting perplexities, we'll use the "real" dev set.
   # (a subset of the training data is used as ${dir}/data/text/ted.txt to work
   # out interpolation weights.
   # note, we can't put it in ${dir}/data/text/, because then pocolm would use
   # it as one of the data sources.
-  cut -d " " -f 2-  < data/dev/text  > ${dir}/data/real_dev_set.txt
+  cut -d " " -f 2-  < /data/dev/text  > ${dir}/data/real_dev_set.txt
 
   # get wordlist
   awk '{print $1}' db/TEDLIUM_release2/TEDLIUM.152k.dic | sed 's:([0-9])::g' | sort | uniq > ${dir}/data/wordlist
