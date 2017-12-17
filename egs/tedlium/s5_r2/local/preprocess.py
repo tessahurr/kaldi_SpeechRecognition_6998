@@ -55,8 +55,9 @@ def preprocess2(filename):
 	# Open the file with read only permit
 	# I opened the file all at once b/c it was easier to parse this way, but 
 	# for a larger file it would be neccesary to buffer in some way
+
+	# Make sure to change "./Gutenberg/txt/"+filename to the path of yyour desired data file(s)
 	f_in = open("./Gutenberg/txt/"+filename, 'r+', encoding="ISO-8859-1")
-#	f_in = open("test.txt", 'r+', encoding="ISO-8859-1")
 	f_out = open("thatFile.txt", 'a')
 
 	text = f_in.read()
@@ -67,17 +68,20 @@ def preprocess2(filename):
 	# replace curly single quotes with straight single quotes
 	text = text.replace("‘", "'")
 	text = text.replace("’", "'")
-#	text = text.replace("_", " ")
 
 	# preserve punctuation with split
 	text = text.replace(".",".<stop>")
 	text = text.replace("?","?<stop>")
 	text = text.replace("!","!<stop>")
-	#text = re.sub(r"^[a-zA-Z0-9]+[\^\']*[a-zA-Z0-9]+[\^\']*[a-zA-Z0-9]*", "", text)
 	text = re.sub(r"[a-zA-Z]+[0-9]+", "", text)
+
+	# these lines are specific to certain errors that would come up in the Gutenberg dataset
+	# i or l was being used instead of 1
 	text = re.sub(r"[0-9]+[il]", "[0-9]+[1]", text)
+	# o or O was being used instead of 0
 	text = re.sub(r"[0-9]+[oO]", "[0-9]+[0]", text)
 	text = re.sub(r"[0-9]+[']+[0-9]*", "[0-9]+[ ]+[0-9]*", text)
+
 	text = text.replace("\n", " ")
 	sentences += re.split("<stop>", text)
 
@@ -91,52 +95,35 @@ def preprocess2(filename):
 
 	for sentence in all_words:
 		for word in sentence:
-#			word = word.replace("_","")	
+			# performs num2word on integers
 			if word[0] in num_list and word[-1] in num_list:
-				word = int_to_en(int(word))	
+				word = int_to_en(int(word))
+			# specific to Gutenberg dataset, many times ordinals had an underscore before it, takes a substring and performs num2word	
 			if word[0] in num_list and word[-3:] in ordinal_list_:
                                 word = word[:-3]
-                                #word = re.findall('(\d+(st|nd|rd|th))', word)
                                 word = num2words(int(word), ordinal=True)
                                 word = word.replace("-", " ")
+			# performs num2word on an ordinal
 			if word[0] in num_list and word[-2:] in ordinal_list:
 				word = word[:-2]
-				#word = re.findall('(\d+(st|nd|rd|th))', word)
 				word = num2words(int(word), ordinal=True)
 				word = word.replace("-", " ")
-		#	if word == "." or word == "?" or word == "!":
-		#		f_out.write(word + "\n")
-#			for char in word:
-#				char = char.replace("_", "")
-		#	else: 
-#				word = word.replace("_", " ")
-		#		f_out.write(" " + word)
-				#word = (" " + word)
-			#word = word.replace("_", " ")
-			#f_out.write(" " + word)
 
 	for sentence in all_words:
 		for word in sentence:
+			# goes through and cleans out all underscores (had to be kept in earlier because or underscore problem with ordinals
 			if "_" in word:
 				word = word.replace("_", "")
+			# new line for EOS punctuation
 			if word == "." or word == "?" or word == "!":
                                 f_out.write(word + "\n")
 			else:
                         	f_out.write(" " + word)	
-	# f2_in = open("thatFile.txt", 'r+', encoding="ISO-8859-1")
-	# f2_out = open("thatOtherFile.txt", "a")
 
-	#for line in f2_in:
-	#	for char in line:
-	#		char = char.replace("_", "")
-	#		f2_out.write(char)
-
-	
-	#f2_in.close()
-	#f2_out.close()
 	f_in.close()
 	f_out.close()
 
+# may need to change the path in the following line to connect to directory with data
 for f in os.listdir("./Gutenberg/txt/"):
 	print(f)
-	preprocess2(f)
+	preprocess(f)
