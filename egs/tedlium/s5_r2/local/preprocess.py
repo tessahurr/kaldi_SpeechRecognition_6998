@@ -50,7 +50,7 @@ def int_to_en(num):
 
 
 
-def preprocess2(filename):
+def preprocess(filename):
 	
 	# Open the file with read only permit
 	# I opened the file all at once b/c it was easier to parse this way, but 
